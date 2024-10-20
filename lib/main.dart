@@ -1,80 +1,57 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 void main() {
   runApp(const App());
 }
 
-class App extends StatefulWidget {
-
+class App extends StatelessWidget {
   const App({super.key});
 
   @override
-  State<App> createState() => _AppState();
+  Widget build(BuildContext context) {
+    return MyInheritedWidget(
+      age: 10,
+      name: "some name",
+      child: InheritedExample(),
+    );
+  }
 }
 
-class _AppState extends State<App> {
-  Dio dio = Dio();
-  List<dynamic> listData = [];
-
-  void getData() async {
-    try {
-      Response data = await dio.get("https://jsonplaceholder.typicode.com/posts");
-
-      if(data.statusCode == 200) {
-        setState(() {
-          listData = data.data as List;
-        });
-      }
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  void addPost() async {
-    try {
-      Response data = await dio.post("https://jsonplaceholder.typicode.com/posts", data: {
-        "title": "lolololo",
-        "body": "lolololol",
-        "userId": 3000
-      });
-
-        print(data.data);
-        setState(() {
-          listData.add(data.data);
-        });
-    } catch(e) {
-      print(e);
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    getData();
-  }
+class InheritedExample extends StatelessWidget {
+  const InheritedExample({super.key});
 
   @override
   Widget build(BuildContext context) {
+    int someAge = MyInheritedWidget.of(context).age;
+    String someName = MyInheritedWidget.of(context).name;
+    
     return MaterialApp(
-      home: Scaffold(
-        body: Column(
-          children: [Expanded(
-            child: ListView.builder(itemBuilder: (context, index) {
-              return Card(
-                surfaceTintColor: Colors.amber.shade50,
-                child: ListTile(
-                  leading: ClipRRect(child: Image.network("https://picsum.photos/400/300", fit: BoxFit.fill, width: 50, height: 50,), borderRadius: BorderRadius.all(Radius.circular(50)), ),
-                  title: Text(listData[index]['title']),
-                  subtitle: Text(listData[index]["body"]),
-                ),
-              );
-            }, itemCount: listData.isEmpty ? 0 : listData.length,),
-          ),
-          ElevatedButton(onPressed: addPost, child: Text("Add new post"))
-          ],
+        home: Scaffold(
+          body: Center(child: Text("Some text - $someName, $someAge")),
         ),
-      ),
-    );
+      );
+  }
+}
+
+
+class MyInheritedWidget extends InheritedWidget {
+  final String name;
+  final int age;
+
+  MyInheritedWidget({
+    required this.name,
+    required this.age,
+    required Widget child
+  }) : super(child: child);
+
+  @override
+  bool updateShouldNotify(covariant InheritedWidget oldWidget) {
+    return true;
+  }
+
+  static MyInheritedWidget of(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<MyInheritedWidget>()!;
   }
 }
